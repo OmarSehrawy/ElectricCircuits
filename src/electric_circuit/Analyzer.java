@@ -2,6 +2,7 @@ package electric_circuit;
 
 import electric_circuit.components.*;
 import java.util.Arrays;
+import org.ejml.simple.SimpleMatrix;
 
 public class Analyzer {
     private NetList netList;
@@ -84,10 +85,13 @@ public class Analyzer {
         }
     }
     public double[] solution() {
-        Gauss();
-        return Z;
-    }
-    private void Gauss() {
-        Elimination.Solve(G,Z);
+        SimpleMatrix matrixG = new SimpleMatrix(G);
+        SimpleMatrix vectorZ = new SimpleMatrix(size,1,true,Z);
+        SimpleMatrix resultX = matrixG.solve(vectorZ);
+        double[] solution = new double[size];
+        for (int i = 0; i < size; i++) {
+            solution[i] = resultX.get(i);
+        }
+        return solution;
     }
 }
