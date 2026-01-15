@@ -2,7 +2,9 @@ package electric_circuit;
 
 import electric_circuit.components.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NetList {
     private List<Resistor> resistors = new ArrayList<>();
@@ -10,9 +12,9 @@ public class NetList {
     private List<Inductor> inductors = new ArrayList<>();
     private List<CurrentSource> currentSources = new ArrayList<>();
     private List<VoltageSource> voltageSources = new ArrayList<>();
-    private List<Node> nodes = new ArrayList<>();
+    private Map<Integer,Node> nodes = new HashMap();
     public NetList() {
-        nodes.add(Node.GND);
+        nodes.put(0,Node.GND);
     }
     public void addComponents(Component comp) {
         linkNode(comp);
@@ -29,19 +31,12 @@ public class NetList {
         for (Component comp : comps) addComponents(comp);
     }
     private void linkNode(Component component) {
-        component.setNodeA(nodeManager(component.getNodeA()));
-        component.setNodeB(nodeManager(component.getNodeB()));
+        component.setNodeA(nodeManager(component.getNodeA().getId()));
+        component.setNodeB(nodeManager(component.getNodeB().getId()));
     }
-    private Node nodeManager(Node n) {
-        if(searchNode(n.getId()) == null) nodes.add(n);
-        return searchNode(n.getId());
-    }
-    private Node searchNode(int id) {
-        Node n = null;
-        for (Node i : nodes) {
-            if (i.getId() == id) n = i;
-        }
-        return n;
+    private Node nodeManager(int id) {
+        if(!nodes.containsKey(id)) nodes.put(id,new Node(id));
+        return nodes.get(id);
     }
     public int nodesCount() {
         return nodes.size()-1;
@@ -64,7 +59,7 @@ public class NetList {
     public List<VoltageSource> getVoltageSources() {
         return voltageSources;
     }
-    public List<Node> getNodes() {
+    public Map<Integer, Node> getNodes() {
         return nodes;
     }
 }
