@@ -1,0 +1,20 @@
+# Compiled Java classes
+target/
+*.class
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+out/
+gen/
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Frontend build artifacts (if you add them later)
+node_modules/
+dist/
