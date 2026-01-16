@@ -1,6 +1,6 @@
-package electric_circuit.components;
+package mna.components;
 
-import electric_circuit.Node;
+import mna.Node;
 
 public class CurrentSource extends ActiveElement {
     //Current flows from A to B

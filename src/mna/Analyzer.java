@@ -1,6 +1,6 @@
-package electric_circuit;
+package mna;
 
-import electric_circuit.components.*;
+import mna.components.*;
 import java.util.Arrays;
 import org.ejml.simple.SimpleMatrix;
 
@@ -93,5 +93,8 @@ public class Analyzer {
             solution[i] = resultX.get(i);
         }
         return solution;
+    }
+    public double[] transientAnalysis() {
+        return null;
     }
 }

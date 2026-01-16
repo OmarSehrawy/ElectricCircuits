@@ -1,4 +1,4 @@
-package electric_circuit;
+package mna;
 
 public class Node {
     private int id;

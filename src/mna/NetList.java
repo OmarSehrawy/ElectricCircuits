@@ -1,10 +1,7 @@
-package electric_circuit;
+package mna;
 
-import electric_circuit.components.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import mna.components.*;
+import java.util.*;
 
 public class NetList {
     private List<Resistor> resistors = new ArrayList<>();
@@ -12,7 +9,7 @@ public class NetList {
     private List<Inductor> inductors = new ArrayList<>();
     private List<CurrentSource> currentSources = new ArrayList<>();
     private List<VoltageSource> voltageSources = new ArrayList<>();
-    private Map<Integer,Node> nodes = new HashMap();
+    private Map<Integer,Node> nodes = new HashMap<>();
     public NetList() {
         nodes.put(0,Node.GND);
     }
@@ -61,5 +58,15 @@ public class NetList {
     }
     public Map<Integer, Node> getNodes() {
         return nodes;
+    }
+    @Override
+    public String toString() {
+        StringBuilder list = new StringBuilder();
+        for(Component c : resistors) list.append(c);
+        for(Component c : capacitors) list.append(c);
+        for(Component c : inductors) list.append(c);
+        for(Component c : currentSources) list.append(c);
+        for(Component c : voltageSources) list.append(c);
+        return list.toString();
     }
 }

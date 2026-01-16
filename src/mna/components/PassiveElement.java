@@ -1,4 +1,4 @@
-package electric_circuit.components;
+package mna.components;
 
 public class PassiveElement extends Component {
 
