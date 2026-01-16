@@ -1,6 +1,5 @@
 to-do
   - Interactive GUI
-  - Transient analysis
   - AC analysis
 
 maybe-will-do

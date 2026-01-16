@@ -4,11 +4,11 @@ import mna.components.*;
 import java.util.*;
 
 public class NetList {
-    private List<Resistor> resistors = new ArrayList<>();
-    private List<Capacitor> capacitors = new ArrayList<>();
-    private List<Inductor> inductors = new ArrayList<>();
-    private List<CurrentSource> currentSources = new ArrayList<>();
-    private List<VoltageSource> voltageSources = new ArrayList<>();
+    private Map<String,Resistor> resistors = new HashMap<>();
+    private Map<String,Capacitor> capacitors = new HashMap<>();
+    private Map<String,Inductor> inductors = new HashMap<>();
+    private Map<String,CurrentSource> currentSources = new HashMap<>();
+    private Map<String,VoltageSource> voltageSources = new HashMap<>();
     private Map<Integer,Node> nodes = new HashMap<>();
     public NetList() {
         nodes.put(0,Node.GND);
@@ -16,11 +16,11 @@ public class NetList {
     public void addComponents(Component comp) {
         linkNode(comp);
         switch (comp) {
-            case Resistor r -> resistors.add(r);
-            case Capacitor c -> capacitors.add(c);
-            case Inductor i -> inductors.add(i);
-            case CurrentSource cs -> currentSources.add(cs);
-            case VoltageSource vs -> voltageSources.add(vs);
+            case Resistor r -> resistors.put(r.getName(),r);
+            case Capacitor c -> capacitors.put(c.getName(),c);
+            case Inductor l -> inductors.put(l.getName(),l);
+            case CurrentSource i -> currentSources.put(i.getName(),i);
+            case VoltageSource v -> voltageSources.put(v.getName(),v);
             default -> {}
         }
     }
@@ -41,19 +41,20 @@ public class NetList {
     public int vsCount() {
         return voltageSources.size();
     }
-    public List<Resistor> getResistors() {
+    public int lCount() {return inductors.size();}
+    public Map<String,Resistor> getResistors() {
         return resistors;
     }
-    public List<Capacitor> getCapacitors() {
+    public Map<String,Capacitor> getCapacitors() {
         return capacitors;
     }
-    public List<Inductor> getInductors() {
+    public Map<String,Inductor> getInductors() {
         return inductors;
     }
-    public List<CurrentSource> getCurrentSources() {
+    public Map<String,CurrentSource> getCurrentSources() {
         return currentSources;
     }
-    public List<VoltageSource> getVoltageSources() {
+    public Map<String,VoltageSource> getVoltageSources() {
         return voltageSources;
     }
     public Map<Integer, Node> getNodes() {
@@ -62,11 +63,11 @@ public class NetList {
     @Override
     public String toString() {
         StringBuilder list = new StringBuilder();
-        for(Component c : resistors) list.append(c);
-        for(Component c : capacitors) list.append(c);
-        for(Component c : inductors) list.append(c);
-        for(Component c : currentSources) list.append(c);
-        for(Component c : voltageSources) list.append(c);
+        for(Component c : resistors.values()) list.append(c);
+        for(Component c : capacitors.values()) list.append(c);
+        for(Component c : inductors.values()) list.append(c);
+        for(Component c : currentSources.values()) list.append(c);
+        for(Component c : voltageSources.values()) list.append(c);
         return list.toString();
     }
 }

@@ -4,7 +4,7 @@ import mna.Node;
 
 public class CurrentSource extends ActiveElement {
     //Current flows from A to B
-    private double I;
+    protected double I;
     public CurrentSource(String name,int nodeA,int nodeB, double I) {
         this.I = I;
         this.name = name;
@@ -19,6 +19,6 @@ public class CurrentSource extends ActiveElement {
     }
     @Override
     public String toString() {
-        return String.format("%s %d %d %6.2f%n",name,nodeA.getId(),nodeB.getId(),I);
+        return String.format("%s %d %d %f%n",name,nodeA.getId(),nodeB.getId(),I);
     }
 }

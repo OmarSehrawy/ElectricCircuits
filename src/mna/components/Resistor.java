@@ -18,6 +18,6 @@ public class Resistor extends PassiveElement {
     }
     @Override
     public String toString() {
-        return String.format("%s %d %d %6.2f%n",name,nodeA.getId(),nodeB.getId(),R);
+        return String.format("%s %d %d %f%n",name,nodeA.getId(),nodeB.getId(),R);
     }
 }
