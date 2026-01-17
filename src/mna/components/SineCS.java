@@ -1,16 +1,16 @@
 package mna.components;
 
-public class SineVS extends VoltageSource implements Source{
+public class SineCS extends CurrentSource implements Source{
     private double frequency;
     private double phase;
-    public SineVS(String name, int nodeA, int nodeB, double V, double frequency, double phase) {
-        super(name, nodeA, nodeB, V);
+    public SineCS(String name, int nodeA, int nodeB, double I, double frequency, double phase) {
+        super(name, nodeA, nodeB, I);
         this.frequency = frequency;
         this.phase = phase;
     }
     @Override
     public double getValue(double time) {
-        return V * Math.sin(2*Math.PI*frequency*time + phase);
+        return I * Math.sin(2*Math.PI*frequency*time + phase);
     }
     public double getFrequency() {
         return frequency;

@@ -2,7 +2,7 @@ package mna;
 
 import mna.components.*;
 import java.util.Arrays;
-import org.ejml.simple.SimpleMatrix;
+import org.ejml.simple.*;
 
 public class Analyzer {
     enum Mode {DC,T,AC}
@@ -33,82 +33,7 @@ public class Analyzer {
     private void setTo0(double[][] a) {
         for(double[] b : a) Arrays.fill(b,0.0);
     }
-    private void setGMatrix(double step) {
-        G = new double[size][size];
-        setTo0(G);
-        for (Resistor r : netList.getResistors().values()) {
-            int a = r.getNodeA().getId() - 1;
-            int b = r.getNodeB().getId() - 1;
-            if (r.getNodeA() != Node.GND) G[a][a] += r.getG();
-            if (r.getNodeB() != Node.GND) G[b][b] += r.getG();
-            if (r.getNodeA() != Node.GND && r.getNodeB() != Node.GND) {
-                G[a][b] -= r.getG();
-                G[b][a] -= r.getG();
-            }
-        }
-        int vsIndex = 0;
-        for (VoltageSource vs : netList.getVoltageSources().values()) {
-            int a = vs.getNodeA().getId() - 1;
-            int b = vs.getNodeB().getId() - 1;
-            if (vs.getNodeA() != Node.GND) {
-                G[a][m+vsIndex] = 1;
-                G[vsIndex+m][a] = 1;
-            }
-            if (vs.getNodeB() != Node.GND) {
-                G[b][vsIndex+m] = -1;
-                G[vsIndex+m][b] = -1;
-            }
-            vsIndex++;
-        }
-        if(anaylsismode == Mode.T) {
-            int lIndex = 0;
-            for (Inductor l : netList.getInductors().values()) {
-                int a = l.getNodeA().getId() - 1;
-                int b = l.getNodeB().getId() - 1;
-                int row = lIndex + m + n;
-                if (l.getNodeA() != Node.GND) {
-                    G[a][row] = 1;
-                    G[row][a] = 1;
-                }
-                if (l.getNodeB() != Node.GND) {
-                    G[b][row] = -1;
-                    G[row][b] = -1;
-                }
-                G[row][row] = -l.getL() / step;
-                lIndex++;
-            }
-        }
-    }
-    private void setCMatrix() {
-        C = new double[size][size];
-        setTo0(C);
-        for (Capacitor c : netList.getCapacitors().values()) {
-            int a = c.getNodeA().getId() - 1;
-            int b = c.getNodeB().getId() - 1;
-            if (c.getNodeA() != Node.GND) C[a][a] += c.getC();
-            if (c.getNodeB() != Node.GND) C[b][b] += c.getC();
-            if (c.getNodeA() != Node.GND && c.getNodeB() != Node.GND) {
-                C[a][b] -= c.getC();
-                C[b][a] -= c.getC();
-            }
-        }
-    }
-    private void setZVector(double time) {
-        Z = new double[size];
-        Arrays.fill(Z,0.0);
-        for (CurrentSource cs : netList.getCurrentSources().values()) {
-            int a = cs.getNodeA().getId() - 1;
-            int b = cs.getNodeB().getId() - 1;
-            if (cs.getNodeA() != Node.GND) Z[a] -= cs.getI();
-            if (cs.getNodeB() != Node.GND) Z[b] += cs.getI();
-        }
-        int vsIndex = 0;
-        for (VoltageSource vs : netList.getVoltageSources().values()) {
-            Z[m+vsIndex] = vs.getValue(time);
-            vsIndex++;
-        }
-    }
-    public double[] solution() {
+    public double[] dcSolution() {
         anaylsismode = Mode.DC;
         updateNetList(netList);
         prepMatrices();
@@ -118,6 +43,26 @@ public class Analyzer {
         double[] solution = new double[size];
         for (int i = 0; i < size; i++) {
             solution[i] = resultX.get(i);
+        }
+        return solution;
+    }
+    public double[][] dcSweep(String c,int steps,double start,double end) {
+        anaylsismode = Mode.DC;
+        updateNetList(netList);
+        double[][] solution = new double[steps+1][size+1];
+        char type = c.charAt(0);
+        double delta = (end-start)/steps;
+        for (int i = 0; i <= steps; i++) {
+            double currentValue = start + i*delta;
+            switch (type) {
+                case 'R': netList.getResistors().get(c).setR(currentValue); break;
+                case 'V': netList.getVoltageSources().get(c).setV(currentValue); break;
+                case 'I': netList.getCurrentSources().get(c).setI(currentValue); break;
+                default: break;
+            }
+            double[] currentSolution = dcSolution();
+            System.arraycopy(currentSolution, 0, solution[i], 0, size);
+            solution[i][size] = currentValue;
         }
         return solution;
     }
@@ -152,7 +97,84 @@ public class Analyzer {
         }
         return trans;
     }
-    private void prepMatrices(double step,double time) { setGMatrix(step); setCMatrix(); setZVector(time); }
-    private void prepMatrices(double step) { setGMatrix(step); setCMatrix(); setZVector(0); }
-    private void prepMatrices() { setGMatrix(0); setCMatrix(); setZVector(0); }
+    private void prepMatrices(double step,double time) {}
+    private void prepMatrices(double step) {}
+    private void prepMatrices() {
+        G = new double[size][size];
+        setTo0(G);
+        Z = new double[size];
+        Arrays.fill(Z,0.0);
+        addResistorStamp();
+        addCSStamp(0);
+        addVSStamp(0);
+    }
+    private void addResistorStamp() {
+        for (Resistor r : netList.getResistors().values()) {
+            int a = r.getNodeA().getId() - 1;
+            int b = r.getNodeB().getId() - 1;
+            if (r.getNodeA() != Node.GND) G[a][a] += r.getG();
+            if (r.getNodeB() != Node.GND) G[b][b] += r.getG();
+            if (r.getNodeA() != Node.GND && r.getNodeB() != Node.GND) {
+                G[a][b] -= r.getG();
+                G[b][a] -= r.getG();
+            }
+        }
+    }
+    private void addVSStamp(double time) {
+        int vsIndex = 0;
+        for (VoltageSource vs : netList.getVoltageSources().values()) {
+            int a = vs.getNodeA().getId() - 1;
+            int b = vs.getNodeB().getId() - 1;
+            if (vs.getNodeA() != Node.GND) {
+                G[a][m+vsIndex] = 1;
+                G[vsIndex+m][a] = 1;
+            }
+            if (vs.getNodeB() != Node.GND) {
+                G[b][vsIndex+m] = -1;
+                G[vsIndex+m][b] = -1;
+            }
+            Z[m+vsIndex] = vs.getValue(time);
+            vsIndex++;
+        }
+    }
+    private void addCSStamp(double time) {
+        for (CurrentSource cs : netList.getCurrentSources().values()) {
+            int a = cs.getNodeA().getId() - 1;
+            int b = cs.getNodeB().getId() - 1;
+            if (cs.getNodeA() != Node.GND) Z[a] -= cs.getValue(time);
+            if (cs.getNodeB() != Node.GND) Z[b] += cs.getValue(time);
+        }
+    }
+    private void addCapacitorStamp() {
+        for (Capacitor c : netList.getCapacitors().values()) {
+            int a = c.getNodeA().getId() - 1;
+            int b = c.getNodeB().getId() - 1;
+            if (c.getNodeA() != Node.GND) C[a][a] += c.getC();
+            if (c.getNodeB() != Node.GND) C[b][b] += c.getC();
+            if (c.getNodeA() != Node.GND && c.getNodeB() != Node.GND) {
+                C[a][b] -= c.getC();
+                C[b][a] -= c.getC();
+            }
+        }
+    }
+    private void addInductorStamp(double step) {
+        if(anaylsismode == Mode.T) {
+            int lIndex = 0;
+            for (Inductor l : netList.getInductors().values()) {
+                int a = l.getNodeA().getId() - 1;
+                int b = l.getNodeB().getId() - 1;
+                int row = lIndex + m + n;
+                if (l.getNodeA() != Node.GND) {
+                    G[a][row] = 1;
+                    G[row][a] = 1;
+                }
+                if (l.getNodeB() != Node.GND) {
+                    G[b][row] = -1;
+                    G[row][b] = -1;
+                }
+                G[row][row] = -l.getL() / step;
+                lIndex++;
+            }
+        }
+    }
 }
