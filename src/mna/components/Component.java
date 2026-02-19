@@ -24,4 +24,7 @@ public class Component {
     public void setName(String name) {
         this.name = name;
     }
+    public double[] getInfo() {
+        return null;
+    }
 }

@@ -1,12 +1,13 @@
 package mna;
 
 import mna.components.*;
-import java.util.Arrays;
+import java.util.*;
 import org.ejml.simple.*;
 
 public class Analyzer {
-    enum Mode {DC,T,AC}
-    Mode anaylsismode;
+    private enum Mode {DC,T,AC}
+    private Mode anaylsismode;
+    private boolean sweepMode = false;
     private NetList netList;
     private int m;
     private int n;
@@ -33,6 +34,18 @@ public class Analyzer {
     private void setTo0(double[][] a) {
         for(double[] b : a) Arrays.fill(b,0.0);
     }
+    private void assignNodeVoltage(double[] V) {
+        for (int i = 0; i < m; i++) {
+            int id = i + 1;
+            netList.getNodes().get(id).setV(V[i]);
+        }
+    }
+    private void assignVSCurrent(double[] V) {
+        int index = m;
+        for (VoltageSource vs : netList.getVoltageSources().values()) {
+            vs.setI(V[index++]);
+        }
+    }
     public double[] dcSolution() {
         anaylsismode = Mode.DC;
         updateNetList(netList);
@@ -44,10 +57,15 @@ public class Analyzer {
         for (int i = 0; i < size; i++) {
             solution[i] = resultX.get(i);
         }
+        if(!sweepMode) {
+            assignNodeVoltage(solution);
+            assignVSCurrent(solution);
+        }
         return solution;
     }
     public double[][] dcSweep(String c,int steps,double start,double end) {
         anaylsismode = Mode.DC;
+        sweepMode = true;
         updateNetList(netList);
         double[][] solution = new double[steps+1][size+1];
         char type = c.charAt(0);
@@ -105,6 +123,7 @@ public class Analyzer {
         Z = new double[size];
         Arrays.fill(Z,0.0);
         addResistorStamp();
+        addWireStamp();
         addCSStamp(0);
         addVSStamp(0);
     }
@@ -117,6 +136,18 @@ public class Analyzer {
             if (r.getNodeA() != Node.GND && r.getNodeB() != Node.GND) {
                 G[a][b] -= r.getG();
                 G[b][a] -= r.getG();
+            }
+        }
+    }
+    private void addWireStamp() {
+        for (Wire w : netList.getWires().values()) {
+            int a = w.getNodeA().getId() - 1;
+            int b = w.getNodeB().getId() - 1;
+            if (w.getNodeA() != Node.GND) G[a][a] += w.getG();
+            if (w.getNodeB() != Node.GND) G[b][b] += w.getG();
+            if (w.getNodeA() != Node.GND && w.getNodeB() != Node.GND) {
+                G[a][b] -= w.getG();
+                G[b][a] -= w.getG();
             }
         }
     }

@@ -42,7 +42,13 @@ public class App {
         switch (choice) {
             case 1:
                 //DC
-                System.out.print(Arrays.toString(analyzer.dcSolution())); break;
+                System.out.println(Arrays.toString(analyzer.dcSolution()));
+                System.out.println("Choose component");
+                while (!scn.hasNext("")) {
+                    System.out.println("Choose component");
+                    System.out.println(Arrays.toString(getInfo(scn.next())));
+                }
+                break;
             case 2:
                 //DC Sweep
                 System.out.println("Choose component");
@@ -67,5 +73,17 @@ public class App {
         int steps = scn.nextInt(); double start = scn.nextDouble(); double end = scn.nextDouble();
         double[][] res = analyzer.dcSweep(c,steps,start,end);
         visualizeSweep(res,c);
+    }
+    public static double[] getInfo(String c) {
+        char type = c.charAt(0);
+        double[] info = new double[0];
+        switch (type) {
+            case 'R': info = netList.getResistors().get(c).getInfo(); break;
+            case 'W': info = netList.getWires().get(c).getInfo(); break;
+            case 'V': info = netList.getVoltageSources().get(c).getInfo(); break;
+            case 'I': info = netList.getCurrentSources().get(c).getInfo(); break;
+            default: break;
+        }
+        return info;
     }
 }

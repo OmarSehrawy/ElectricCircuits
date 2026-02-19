@@ -4,6 +4,7 @@ import mna.components.*;
 import java.util.*;
 
 public class NetList {
+    private Map<String,Wire> wires = new HashMap<>();
     private Map<String,Resistor> resistors = new HashMap<>();
     private Map<String,Capacitor> capacitors = new HashMap<>();
     private Map<String,Inductor> inductors = new HashMap<>();
@@ -16,6 +17,7 @@ public class NetList {
     public void addComponents(Component comp) {
         linkNode(comp);
         switch (comp) {
+            case Wire w -> wires.put(w.getName(),w);
             case Resistor r -> resistors.put(r.getName(),r);
             case Capacitor c -> capacitors.put(c.getName(),c);
             case Inductor l -> inductors.put(l.getName(),l);
@@ -45,6 +47,9 @@ public class NetList {
     public Map<String,Resistor> getResistors() {
         return resistors;
     }
+    public Map<String, Wire> getWires() {
+        return wires;
+    }
     public Map<String,Capacitor> getCapacitors() {
         return capacitors;
     }
@@ -64,6 +69,7 @@ public class NetList {
     public String toString() {
         StringBuilder list = new StringBuilder();
         for(Component c : resistors.values()) list.append(c);
+        for(Component c : wires.values()) list.append(c);
         for(Component c : capacitors.values()) list.append(c);
         for(Component c : inductors.values()) list.append(c);
         for(Component c : currentSources.values()) list.append(c);

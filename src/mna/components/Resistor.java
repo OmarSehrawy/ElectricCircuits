@@ -3,7 +3,7 @@ package mna.components;
 import mna.Node;
 
 public class Resistor extends PassiveElement {
-    private double R;
+    protected double R;
     public Resistor(String name, int nodeA, int nodeB,double R) {
         this.R = R;
         this.name = name;
@@ -19,5 +19,12 @@ public class Resistor extends PassiveElement {
     @Override
     public String toString() {
         return String.format("%s %d %d %f%n",name,nodeA.getId(),nodeB.getId(),R);
+    }
+    @Override
+    public double[] getInfo() {
+        double V = nodeA.getV() - nodeB.getV();
+        double I = V / R;
+        double P = I * V;
+        return new double[]{R,V,I,P};
     }
 }

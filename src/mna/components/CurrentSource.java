@@ -15,11 +15,17 @@ public class CurrentSource extends ActiveElement implements Source {
         this.I = I;
     }
     @Override
+    public double getValue(double time) {
+        return I;
+    }
+    @Override
     public String toString() {
         return String.format("%s %d %d %f%n",name,nodeA.getId(),nodeB.getId(),I);
     }
     @Override
-    public double getValue(double time) {
-        return I;
+    public double[] getInfo() {
+        double V = nodeA.getV() - nodeB.getV();
+        double P = I * V;
+        return new double[]{V,I,P};
     }
 }

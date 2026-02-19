@@ -25,10 +25,12 @@ public class Parser {
         name = fields[0];
         a = Integer.parseInt(fields[1]);
         b = Integer.parseInt(fields[2]);
-        value = Double.parseDouble(fields[3]);
+        value = (fields.length >= 4)? Double.parseDouble(fields[3]) : 0;
         char cType = fields[0].charAt(0);
         if (cType == 'R') {
             c = new Resistor(name,a,b,value);
+        } else if (cType == 'W') {
+            c = new Wire(name,a,b);
         } else if (cType == 'C') {
             c = new Capacitor(name,a,b,value);
         } else if (cType == 'L') {
