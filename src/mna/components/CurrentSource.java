@@ -11,7 +11,8 @@ public class CurrentSource extends ActiveElement implements Source {
         this.nodeA = (nodeA == 0) ? Node.GND : new Node(nodeA);
         this.nodeB = (nodeB == 0) ? Node.GND : new Node(nodeB);
     }
-    public void setI(double I) {
+    @Override
+    public void setValue(double I) {
         this.I = I;
     }
     @Override

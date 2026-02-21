@@ -5,6 +5,7 @@ import java.util.*;
 import mna.exceptions.AnalysisException;
 import mna.exceptions.InvalidComponentException;
 import mna.exceptions.SweepException;
+import mna.exceptions.ValueException;
 import org.ejml.data.SingularMatrixException;
 import org.ejml.simple.*;
 
@@ -72,6 +73,7 @@ public class Analyzer {
         return solution;
     }
     public double[][] dcSweep(String c,int steps,double start,double end) throws SweepException, InvalidComponentException {
+        if (steps < 1) throw new SweepException("Invalid number of steps");
         anaylsismode = Mode.DC;
         sweepMode = true;
         updateNetList(netList);
@@ -84,14 +86,21 @@ public class Analyzer {
             default -> throw new InvalidComponentException("Unknown component");
         };
         if(sweepComponent == null) throw new InvalidComponentException("Component doesn't exist");
+        try {
+            sweepComponent.setValue(start);
+            sweepComponent.setValue(end);
+        } catch (ValueException e) {
+            throw new SweepException("Invalid values");
+        }
         double delta = (end-start)/steps;
         for (int i = 0; i <= steps; i++) {
             double currentValue = start + i*delta;
             switch (type) {
-                case 'R': ((Resistor) sweepComponent).setR(currentValue); break;
-                case 'V': ((VoltageSource) sweepComponent).setV(currentValue); break;
-                case 'I': ((CurrentSource) sweepComponent).setI(currentValue); break;
-                default: break;
+                case 'R', 'V', 'I':
+                    sweepComponent.setValue(currentValue);
+                    break;
+                default:
+                    break;
             }
             try {
                 double[] currentSolution = dcSolution();

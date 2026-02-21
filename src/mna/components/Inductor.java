@@ -13,7 +13,8 @@ public class Inductor extends PassiveElement {
     public double getL() {
         return L;
     }
-    public void setL(double L) {
+    @Override
+    public void setValue(double L) {
         this.L = L;
     }
     @Override

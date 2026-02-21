@@ -13,7 +13,8 @@ public class Capacitor extends PassiveElement {
     public double getC() {
         return C;
     }
-    public void setC(double C) {
+    @Override
+    public void setValue(double C) {
         this.C = C;
     }
     @Override

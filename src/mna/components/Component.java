@@ -27,4 +27,5 @@ public class Component {
     public double[] getInfo() {
         return null;
     }
+    public void setValue(double value) {}
 }

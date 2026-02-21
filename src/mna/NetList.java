@@ -1,6 +1,7 @@
 package mna;
 
 import mna.components.*;
+import mna.exceptions.InvalidComponentException;
 import java.util.*;
 
 public class NetList {
@@ -30,8 +31,12 @@ public class NetList {
         for (Component comp : comps) addComponents(comp);
     }
     private void linkNode(Component component) {
-        component.setNodeA(nodeManager(component.getNodeA().getId()));
-        component.setNodeB(nodeManager(component.getNodeB().getId()));
+        try {
+            component.setNodeA(nodeManager(component.getNodeA().getId()));
+            component.setNodeB(nodeManager(component.getNodeB().getId()));
+        } catch (InvalidComponentException e) {
+            System.out.println(e.getMessage());
+        }
     }
     private Node nodeManager(int id) {
         if(!nodes.containsKey(id)) nodes.put(id,new Node(id));

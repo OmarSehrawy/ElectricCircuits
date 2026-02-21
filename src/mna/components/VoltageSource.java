@@ -16,7 +16,8 @@ public class VoltageSource extends ActiveElement implements Source{
     public double getValue(double time) {
         return V;
     }
-    public void setV(double V) {
+    @Override
+    public void setValue(double V) {
         this.V = V;
     }
     public void setI(double I) {
