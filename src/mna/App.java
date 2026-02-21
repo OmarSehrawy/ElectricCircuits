@@ -1,6 +1,9 @@
 package mna;
 
 import mna.components.*;
+import mna.exceptions.AnalysisException;
+import mna.exceptions.InvalidComponentException;
+import mna.exceptions.SweepException;
 import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.SwingWrapper;
 import org.knowm.xchart.XYChart;
@@ -22,7 +25,6 @@ public class App {
         System.out.println("1) DC Analysis. 2) DC Sweep. 3) Transient Analysis. 4) AC Analysis.");
         int choice = scn.nextInt();
         handleChoice(choice);
-        scn.next();
     }
     public static void visualizeSweep(double[][] V,String r) {
         int steps = V.length;
@@ -42,11 +44,15 @@ public class App {
         switch (choice) {
             case 1:
                 //DC
-                System.out.println(Arrays.toString(analyzer.dcSolution()));
-                System.out.println("Choose component");
-                while (!scn.hasNext("")) {
+                try {
+                    System.out.println(Arrays.toString(analyzer.dcSolution()));
                     System.out.println("Choose component");
-                    System.out.println(Arrays.toString(getInfo(scn.next())));
+                    while (!scn.hasNext("exit")) {
+                        System.out.println("Choose component");
+                        System.out.println(Arrays.toString(getInfo(scn.next())));
+                    }
+                } catch (AnalysisException e) {
+                    System.out.println("Can't solve: " + e.getMessage());
                 }
                 break;
             case 2:
@@ -71,8 +77,12 @@ public class App {
         char type = c.charAt(0);
         System.out.printf("How many steps form []%c to []%c%n:",type,type);
         int steps = scn.nextInt(); double start = scn.nextDouble(); double end = scn.nextDouble();
-        double[][] res = analyzer.dcSweep(c,steps,start,end);
-        visualizeSweep(res,c);
+        try {
+            double[][] res = analyzer.dcSweep(c,steps,start,end);
+            visualizeSweep(res,c);
+        } catch (SweepException | InvalidComponentException e) {
+            System.out.println(e.getMessage());
+        }
     }
     public static double[] getInfo(String c) {
         char type = c.charAt(0);

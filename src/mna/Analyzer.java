@@ -2,6 +2,10 @@ package mna;
 
 import mna.components.*;
 import java.util.*;
+import mna.exceptions.AnalysisException;
+import mna.exceptions.InvalidComponentException;
+import mna.exceptions.SweepException;
+import org.ejml.data.SingularMatrixException;
 import org.ejml.simple.*;
 
 public class Analyzer {
@@ -46,42 +50,58 @@ public class Analyzer {
             vs.setI(V[index++]);
         }
     }
-    public double[] dcSolution() {
+    public double[] dcSolution() throws AnalysisException {
         anaylsismode = Mode.DC;
         updateNetList(netList);
         prepMatrices();
         SimpleMatrix matrixG = new SimpleMatrix(G);
         SimpleMatrix vectorZ = new SimpleMatrix(size,1,true,Z);
-        SimpleMatrix resultX = matrixG.solve(vectorZ);
         double[] solution = new double[size];
-        for (int i = 0; i < size; i++) {
-            solution[i] = resultX.get(i);
-        }
-        if(!sweepMode) {
-            assignNodeVoltage(solution);
-            assignVSCurrent(solution);
+        try {
+            SimpleMatrix resultX = matrixG.solve(vectorZ);
+            for (int i = 0; i < size; i++) {
+                solution[i] = resultX.get(i);
+            }
+            if (!sweepMode) {
+                assignNodeVoltage(solution);
+                assignVSCurrent(solution);
+            }
+        } catch (SingularMatrixException e) {
+            throw new AnalysisException("Singular matrix");
         }
         return solution;
     }
-    public double[][] dcSweep(String c,int steps,double start,double end) {
+    public double[][] dcSweep(String c,int steps,double start,double end) throws SweepException, InvalidComponentException {
         anaylsismode = Mode.DC;
         sweepMode = true;
         updateNetList(netList);
         double[][] solution = new double[steps+1][size+1];
         char type = c.charAt(0);
+        Component sweepComponent = switch (type) {
+            case 'R' -> netList.getResistors().get(c);
+            case 'V' -> netList.getVoltageSources().get(c);
+            case 'I' -> netList.getCurrentSources().get(c);
+            default -> throw new InvalidComponentException("Unknown component");
+        };
+        if(sweepComponent == null) throw new InvalidComponentException("Component doesn't exist");
         double delta = (end-start)/steps;
         for (int i = 0; i <= steps; i++) {
             double currentValue = start + i*delta;
             switch (type) {
-                case 'R': netList.getResistors().get(c).setR(currentValue); break;
-                case 'V': netList.getVoltageSources().get(c).setV(currentValue); break;
-                case 'I': netList.getCurrentSources().get(c).setI(currentValue); break;
+                case 'R': ((Resistor) sweepComponent).setR(currentValue); break;
+                case 'V': ((VoltageSource) sweepComponent).setV(currentValue); break;
+                case 'I': ((CurrentSource) sweepComponent).setI(currentValue); break;
                 default: break;
             }
-            double[] currentSolution = dcSolution();
-            System.arraycopy(currentSolution, 0, solution[i], 0, size);
-            solution[i][size] = currentValue;
+            try {
+                double[] currentSolution = dcSolution();
+                System.arraycopy(currentSolution, 0, solution[i], 0, size);
+                solution[i][size] = currentValue;
+            } catch (AnalysisException e) {
+                throw new SweepException("Sweep failed at " + type + " = " + currentValue);
+            }
         }
+        sweepMode = false;
         return solution;
     }
     public double[][] transientAnalysis(double step,double duration) {
